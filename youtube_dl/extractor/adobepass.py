@@ -1,4 +1,32 @@
-# coding: utf-8
+
+Donation:
+
+PayPal - The safer, easier way to pay online! 
+Open Large Text Files
+When opening large files with the standard file editor, your computer will likely freeze or say "this file is too large for Notepad to open". This web app will let you read large, giant, huge, monster, rebel text, xml or log files fast. This web app makes use of modern web standards to open files with Javascript only. It has been tested to work well in Windows, Mac, Linux, Android and iOS with files of any size.
+
+Select one or more files at a time from your file system.
+Open the file you want to view in the viewer.
+By default the viewer will display blocks of 10,000 bytes at a time. This can be customized.
+Change Log
+2016-02-27: Search funcionality now available. This is something you guys have been asking for. Type something in the input field, click the search button and the app will start searching by reading the selected file by blocks of "n" bytes at a time. The block of bytes is defined by the difference between "starting byte" and "ending byte" input fileds.
+
+
+Files Selected:	
+adobepass.txt	
+Opened file:adobepass.txt
+File type:text/plain
+File size:46278B (45KB)
+Last modified:11/6/2019
+Starting byte 
+1
+ Ending byte 
+46277
+ [Block: 45KB] Starting byte: 1B
+Read ◁◁ ◁ ▷ ▷▷
+Search terms ↷
+ Search
+ coding: utf-8
 from __future__ import unicode_literals
 
 import re
@@ -1535,24 +1563,16 @@ class AdobePassIE(InfoExtractor):
                         mso_info.get('username_field', 'username'): username,
                         mso_info.get('password_field', 'password'): password,
                         'login_type': 'username,password',
-                        'source': 'authsynacor_identity1.dishnetwork.com',
-                        'source_button': 'authsynacor_identity1.dishnetwork.com',
+                        'source': 'identity1.dishnetwork.com',
+                        'source_button': 'identity1.dishnetwork.com',
                         'remember_me': 'no'
                     })
                     mvpd_confirm_page, urlh = mvpd_confirm_page_res
                     finish_url = urlh.geturl()
-                    finish_url = finish_url.replace('/login','/finish')
+                    finish_url = finish_url.replace('/login','/DiscoveryAssociationsResume')
                     mvpd_confirm_page_res = self._download_webpage_handle(
                         finish_url, video_id, 'Completing social login')
                     mvpd_confirm_page, urlh = mvpd_confirm_page_res
-                    mvpd_confirm_page_res = post_form(mvpd_confirm_page_res, 'Logging in', {
-                        mso_info.get('username_field', 'username'): username,
-                        mso_info.get('password_field', 'password'): password,
-                        'login_type': 'username,password',
-                        'source': 'authsynacor_identity1.dishnetwork.com',
-                        'source_button': 'authsynacor_identity1.dishnetwork.com',
-                        'remember_me': 'no'
-                    })
                     mvpd_confirm_page_res = process_redirects(
                         mvpd_confirm_page_res, video_id, 'Confirming Login', True)
                     post_form(mvpd_confirm_page_res, 'Confirming Login')
