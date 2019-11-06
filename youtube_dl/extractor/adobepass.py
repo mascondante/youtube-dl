@@ -20,7 +20,7 @@ from ..utils import (
 
 
 MSO_INFO = {
-        'Dish': {
+    'Dish': {
         'name': 'Dish',
         'username_field': 'username',
         'password_field': 'password',
@@ -28,11 +28,6 @@ MSO_INFO = {
     'DTV': {
         'name': 'DIRECTV',
         'username_field': 'username',
-        'password_field': 'password',
-    },
-    'ATT': {
-        'name': 'AT&T U-verse',
-        'username_field': 'userid',
         'password_field': 'password',
     },
     'ATTOTT': {
@@ -1335,8 +1330,8 @@ class AdobePassIE(InfoExtractor):
     _DOWNLOADING_LOGIN_PAGE = 'Downloading Provider Login Page'
 
     def _download_webpage_handle(self, *args, **kwargs):
-        headers = self.geo_verification_headers()
-        headers.update(kwargs.get('headers', {}))
+        headers = kwargs.get('headers', {})
+        headers.update(self.geo_verification_headers())
         kwargs['headers'] = headers
         return super(AdobePassIE, self)._download_webpage_handle(
             *args, **compat_kwargs(kwargs))
@@ -1376,6 +1371,24 @@ class AdobePassIE(InfoExtractor):
                 post_url, video_id, note, data=urlencode_postdata(form_data), headers={
                     'Content-Type': 'application/x-www-form-urlencoded',
                 })
+
+        def process_redirects(page_res, video_id, note, lastbookend=False):
+            page, urlh = page_res
+            while 'Redirecting...' in page:
+                redirect_url = extract_redirect_url(page)
+                if redirect_url:
+                    page_res = self._download_webpage_handle(
+                        redirect_url, video_id, note)
+                else:
+                    form_data = self._hidden_inputs(page)
+                    url = urlh.geturl()
+                    if lastbookend:
+                        url.replace('firstbookend', 'lastbookend')
+                    page_res = self._download_webpage_handle(
+                        url, video_id, note,
+                        query=form_data)
+                page, urlh = page_res
+            return page_res
 
         def raise_mvpd_required():
             raise ExtractorError(
@@ -1518,7 +1531,6 @@ class AdobePassIE(InfoExtractor):
                     provider_redirect_page, urlh = provider_redirect_page_res
                     provider_redirect_page_res = self._download_webpage_handle(
                         urlh.geturl(), video_id, self._DOWNLOADING_LOGIN_PAGE)
-                    provider_redirect_page, urlh = provider_redirect_page_res
                     mvpd_confirm_page_res = post_form(provider_redirect_page_res, 'Attempting social login', {
                         mso_info.get('username_field', 'username'): username,
                         mso_info.get('password_field', 'password'): password,
