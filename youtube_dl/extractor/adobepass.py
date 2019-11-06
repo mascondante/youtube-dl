@@ -20,6 +20,11 @@ from ..utils import (
 
 
 MSO_INFO = {
+        'Dish': {
+        'name': 'Dish',
+        'username_field': 'username',
+        'password_field': 'password',
+    },
     'DTV': {
         'name': 'DIRECTV',
         'username_field': 'username',
@@ -1496,6 +1501,49 @@ class AdobePassIE(InfoExtractor):
                         }), headers={
                             'Content-Type': 'application/x-www-form-urlencoded'
                         })
+                elif mso_id == 'Dish':
+                    provider_redirect_page, urlh = provider_redirect_page_res
+                    provider_refresh_redirect_url = extract_redirect_url(
+                        provider_redirect_page, url=urlh.geturl())
+                    if provider_refresh_redirect_url:
+                        provider_redirect_page_res = self._download_webpage_handle(
+                            provider_refresh_redirect_url, video_id,
+                            'Downloading Provider Redirect Page (meta refresh)')
+                    provider_redirect_page, urlh = provider_redirect_page_res
+                    if '<body onload="document.forms[0].submit()">' in provider_redirect_page:
+                        provider_redirect_page_res = post_form(
+                            provider_redirect_page_res, 'Downloading login page (redirect)')
+                    provider_redirect_page_res = process_redirects(
+                        provider_redirect_page_res, video_id, 'Downloading login page (redirect)', True)
+                    provider_redirect_page, urlh = provider_redirect_page_res
+                    provider_redirect_page_res = self._download_webpage_handle(
+                        urlh.geturl(), video_id, self._DOWNLOADING_LOGIN_PAGE)
+                    provider_redirect_page, urlh = provider_redirect_page_res
+                    mvpd_confirm_page_res = post_form(provider_redirect_page_res, 'Attempting social login', {
+                        mso_info.get('username_field', 'username'): username,
+                        mso_info.get('password_field', 'password'): password,
+                        'login_type': 'username,password',
+                        'source': 'authsynacor_identity1.dishnetwork.com',
+                        'source_button': 'authsynacor_identity1.dishnetwork.com',
+                        'remember_me': 'no'
+                    })
+                    mvpd_confirm_page, urlh = mvpd_confirm_page_res
+                    finish_url = urlh.geturl()
+                    finish_url = finish_url.replace('/login','/finish')
+                    mvpd_confirm_page_res = self._download_webpage_handle(
+                        finish_url, video_id, 'Completing social login')
+                    mvpd_confirm_page, urlh = mvpd_confirm_page_res
+                    mvpd_confirm_page_res = post_form(mvpd_confirm_page_res, 'Logging in', {
+                        mso_info.get('username_field', 'username'): username,
+                        mso_info.get('password_field', 'password'): password,
+                        'login_type': 'username,password',
+                        'source': 'authsynacor_identity1.dishnetwork.com',
+                        'source_button': 'authsynacor_identity1.dishnetwork.com',
+                        'remember_me': 'no'
+                    })
+                    mvpd_confirm_page_res = process_redirects(
+                        mvpd_confirm_page_res, video_id, 'Confirming Login', True)
+                    post_form(mvpd_confirm_page_res, 'Confirming Login')
                 else:
                     # Some providers (e.g. DIRECTV NOW) have another meta refresh
                     # based redirect that should be followed.
