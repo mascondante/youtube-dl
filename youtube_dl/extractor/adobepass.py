@@ -1535,24 +1535,16 @@ class AdobePassIE(InfoExtractor):
                         mso_info.get('username_field', 'username'): username,
                         mso_info.get('password_field', 'password'): password,
                         'login_type': 'username,password',
-                        'source': 'authsynacor_identity1.dishnetwork.com',
-                        'source_button': 'authsynacor_identity1.dishnetwork.com',
+                        'source': 'identity1.dishnetwork.com',
+                        'source_button': 'identity1.dishnetwork.com',
                         'remember_me': 'no'
                     })
                     mvpd_confirm_page, urlh = mvpd_confirm_page_res
                     finish_url = urlh.geturl()
-                    finish_url = finish_url.replace('/login','/finish')
+                    finish_url = finish_url.replace('/login','/DiscoveryAssociationsResume')
                     mvpd_confirm_page_res = self._download_webpage_handle(
                         finish_url, video_id, 'Completing social login')
                     mvpd_confirm_page, urlh = mvpd_confirm_page_res
-                    mvpd_confirm_page_res = post_form(mvpd_confirm_page_res, 'Logging in', {
-                        mso_info.get('username_field', 'username'): username,
-                        mso_info.get('password_field', 'password'): password,
-                        'login_type': 'username,password',
-                        'source': 'authsynacor_identity1.dishnetwork.com',
-                        'source_button': 'authsynacor_identity1.dishnetwork.com',
-                        'remember_me': 'no'
-                    })
                     mvpd_confirm_page_res = process_redirects(
                         mvpd_confirm_page_res, video_id, 'Confirming Login', True)
                     post_form(mvpd_confirm_page_res, 'Confirming Login')
